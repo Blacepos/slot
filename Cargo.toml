@@ -1,0 +1,26 @@
+[package]
+name = "slot"
+version = "0.1.0"
+edition = "2021"
+authors = [ "Blacepos" ]
+
+[lib]
+name = "slot_client"
+path = "src/slot_client/lib.rs"
+
+[[bin]]
+name = "slot_server"
+path = "src/slot_server/main.rs"
+
+[dependencies]
+clap = { version = "*", features = ["derive"] }
+flexi_logger = { version = "*" }
+log = { version = "*" }
+futures = { version = "*" }
+serde = { version = "*", features = ["derive"] }
+tokio = { version = "*", features = ["full"] }
+tokio-util = { version = "*", features = ["codec"] }
+tokio-serde = { version = "*", features = ["messagepack"] }
+axum = { version = "*", features = ["http2", "macros"] }
+tower = { version = "*" }
+reqwest = { version = "*", features = ["stream"] }
