@@ -39,8 +39,10 @@ pub async fn module_listener(module_store: ModuleStore, args: &Args) {
 
             // Listener loop
             loop {
-                // await messages to join and handle them immediately
-                // every once in a while, check for dead modules
+                // select between the socket recv and a timer. when a message is
+                // received, we determine if it's a join request or a ping
+                // response. when the timer is finishes, check for modules which
+                // haven't responded for a while, then ping every module.
                 tokio::select! {
                     res = socket.recv_from(&mut buf) => {
                         match res {
@@ -75,7 +77,7 @@ pub async fn module_listener(module_store: ModuleStore, args: &Args) {
                         }
                     }
                     _ = tokio::time::sleep(PING_DELAY_SEC) => {
-                        cleanup_dead(&socket, &module_store).await;
+                        cleanup_dead(&module_store).await;
 
                         let failed = ping_all_modules(&socket, &module_store).await;
                         if failed {
@@ -146,39 +148,24 @@ async fn check_ping_response(
     }
 }
 
-async fn cleanup_dead(socket: &UdpSocket, module_store: &ModuleStore) {
+async fn cleanup_dead(module_store: &ModuleStore) {
     // iterate over modules and check how long its been since we last heard them
     let mut dead = Vec::new();
     module_store.get_vec().await.retain(|module_info| {
         if Instant::now() - module_info.time_last_heard > DEATH_TIMER {
             dead.push(module_info.clone());
 
+            log::warn!(
+                "Module \"{}\" has not responded for a while and will be \
+                removed!",
+                module_info.name
+            );
+
             false
         } else {
             true
         }
     });
-
-    // remove the ones that have exceeded the limit
-    let bye = protocol::SlotMsg {
-        cmd: protocol::MsgIds::Bye as u8,
-        module_http_port: 0,
-        name_len: 0,
-        name: [0; _],
-    }
-    .as_bytes();
-
-    for module_info in dead {
-        // this is just a courtesy in case somehow the module is alive
-        // and messages are only going one way for some reason
-        socket.send_to(&bye, module_info.slot_addr).await.ok(); // ignore error
-
-        log::warn!(
-            "Module \"{}\" has not responded for a while and will be \
-            removed!",
-            module_info.name
-        );
-    }
 }
 
 async fn ping_all_modules(

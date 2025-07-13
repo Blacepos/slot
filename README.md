@@ -9,7 +9,7 @@ The implementation works like this:
 - There can be any number of modules. Each functions as a standalone webserver but implements the Slot protocol to register with the Slot server. The modules run on the same machine as the Slot server
 - When the Slot server receives an HTTP request, it forwards the request to a module, determined by the first segment of the URL endpoint
 
-So for example, if the Slot server recieves a request for "/myproject/index.html", it will forward the request as "/index.html" to the module it knows as "myproject".
+So for example, if the Slot server recieves a request for "/myproject/index.html", it will make an HTTP request for "/myproject/index.html" to the module it knows as "myproject".
 
 ## Usage
 
@@ -62,4 +62,4 @@ Only the localhost interface is supported currently for the server module listen
 
 It is assumed that localhost is entirely inaccessible to even unprivileged users. Any process that can use localhost can register with the Slot server.
 
-HTTPS logistics has not been implemented yet, so neither the Slot server nor any modules can use it.
+HTTPS logistics have not been implemented yet, so neither the Slot server nor any modules can use it.
