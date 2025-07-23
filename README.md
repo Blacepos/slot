@@ -63,3 +63,23 @@ Only the localhost interface is supported currently for the server module listen
 It is assumed that localhost is entirely inaccessible to even unprivileged users. Any process that can use localhost can register with the Slot server.
 
 HTTPS logistics have not been implemented yet, so neither the Slot server nor any modules can use it.
+
+## Build
+
+Build native
+
+```sh
+cargo build
+```
+
+Build for Raspberry Pi 4B
+
+```sh
+# Install cross to handle building for non-native target
+cargo install cross
+
+# *Install Docker*
+
+# Build for target. .cargo/config.toml is set to optimize for CPU "cortex-a72"
+cross build --target=aarch64-unknown-linux-gnu
+```

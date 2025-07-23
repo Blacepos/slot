@@ -22,5 +22,9 @@ tokio = { version = "*", features = ["full"] }
 tokio-util = { version = "*", features = ["codec"] }
 tokio-serde = { version = "*", features = ["messagepack"] }
 axum = { version = "*", features = ["http2", "macros"] }
+axum-server = { version = "*" }
 tower = { version = "*" }
 reqwest = { version = "*", features = ["stream"] }
+
+# Add openssl directly to control its features
+openssl = { version = "*", features = ["vendored"] }
