@@ -22,7 +22,8 @@ tokio = { version = "*", features = ["full"] }
 tokio-util = { version = "*", features = ["codec"] }
 tokio-serde = { version = "*", features = ["messagepack"] }
 axum = { version = "*", features = ["http2", "macros"] }
-axum-server = { version = "*" }
+axum-server = { version = "*", features = ["tls-openssl"] }
+axum-extra = { version = "*" }
 tower = { version = "*" }
 reqwest = { version = "*", features = ["stream"] }
 

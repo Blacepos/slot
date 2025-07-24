@@ -1,3 +1,5 @@
+use std::net::SocketAddr;
+
 use axum::{
     extract::{Path, State},
     response::Response,
@@ -13,14 +15,27 @@ mod cli;
 mod init;
 mod module_handler;
 mod store;
+mod upgrade;
 
 #[tokio::main]
 async fn main() {
     let (args, _logger_handle) = initialize();
     log::debug!("Completed initialization");
-    println!("Completed initialization");
 
     let modules = store::ModuleStore::new();
+
+    let tls_conf = match axum_server::tls_openssl::OpenSSLConfig::from_pem_file(
+        &args.cert_file,
+        &args.key_file,
+    ) {
+        Ok(t) => t,
+        Err(e) => {
+            log::error!("Failed to open PEM files: \"{e}\"");
+            std::process::exit(1);
+        }
+    };
+
+    tokio::spawn(upgrade::redirect_http_to_https(args.clone()));
 
     module_handler::module_listener(modules.clone(), &args).await;
 
@@ -28,9 +43,13 @@ async fn main() {
         .route("/{modname}/{*rest}", get(module_redirect))
         .with_state(modules);
 
-    let listener = tokio::net::TcpListener::bind(args.web_addr).await.unwrap();
+    let https_addr = SocketAddr::new(args.web_addr, args.https_port);
 
-    axum::serve(listener, routes).await.unwrap();
+    log::info!("Webserver listening on {https_addr}");
+    axum_server::bind_openssl(https_addr, tls_conf)
+        .serve(routes.into_make_service())
+        .await
+        .unwrap();
 }
 
 #[axum::debug_handler]

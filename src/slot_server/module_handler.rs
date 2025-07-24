@@ -17,14 +17,12 @@ pub async fn module_listener(module_store: ModuleStore, args: &Args) {
     let args = args.clone();
 
     tokio::spawn(async move {
-        log::info!("Starting Slot module listener thread");
+        log::info!("Starting Slot module thread. Listening on ");
+        let slot_addr = SocketAddr::new(std::net::Ipv4Addr::LOCALHOST.into(), args.slot_port);
         let mut fail_count = 0u8;
         // Restart loop
         loop {
-            let socket = match tokio::net::UdpSocket::bind(SocketAddr::new(
-                std::net::Ipv4Addr::LOCALHOST.into(),
-                args.slot_port,
-            ))
+            let socket = match tokio::net::UdpSocket::bind(slot_addr)
             .await
             {
                 Ok(s) => s,
