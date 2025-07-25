@@ -41,4 +41,10 @@ pub struct Args {
     /// The PEM private key for SSL
     #[arg(short = 'k', long = "key")]
     pub key_file: String,
+
+    /// The route that "/" redirects to. This allows the default route to
+    /// redirect to a module route since the Slot server itself provides no
+    /// content.
+    #[arg(short = 'r', long = "default-redirect")]
+    pub default_redirect: String,
 }

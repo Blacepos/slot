@@ -17,14 +17,15 @@ pub async fn module_listener(module_store: ModuleStore, args: &Args) {
     let args = args.clone();
 
     tokio::spawn(async move {
-        log::info!("Starting Slot module thread. Listening on ");
-        let slot_addr = SocketAddr::new(std::net::Ipv4Addr::LOCALHOST.into(), args.slot_port);
+        let slot_addr = SocketAddr::new(
+            std::net::Ipv4Addr::LOCALHOST.into(),
+            args.slot_port,
+        );
+        log::info!("Starting Slot module thread. Listening on {slot_addr}");
         let mut fail_count = 0u8;
         // Restart loop
         loop {
-            let socket = match tokio::net::UdpSocket::bind(slot_addr)
-            .await
-            {
+            let socket = match tokio::net::UdpSocket::bind(slot_addr).await {
                 Ok(s) => s,
                 Err(e) => {
                     log::error!("Unable to bind to socket address: \"{e}\"");
@@ -105,6 +106,25 @@ async fn check_join_msg(
 ) {
     if pkt.cmd == protocol::MsgIds::Join as u8 {
         let resp = protocol::SlotMsg {
+            cmd: protocol::MsgIds::RejectJoin as u8,
+            module_http_port: 0,
+            name_len: 0,
+            name: [0; _],
+        }
+        .as_bytes();
+
+        let name = ValidName::new(pkt.name_len, pkt.name);
+
+        if pkt.module_http_port == 0 {
+            socket.send_to(&resp, from_addr).await.ok();
+
+            log::warn!(
+                "Module \"{name}\" rejected because their HTTP port was invalid"
+            );
+            return;
+        }
+
+        let resp = protocol::SlotMsg {
             cmd: protocol::MsgIds::ConfrimJoin as u8,
             module_http_port: 0,
             name_len: 0,
@@ -117,8 +137,6 @@ async fn check_join_msg(
 
         let their_http_addr =
             SocketAddr::new(Ipv4Addr::LOCALHOST.into(), http_port);
-
-        let name = ValidName::new(pkt.name_len, pkt.name);
 
         if let Err(e) = socket.send_to(&resp, from_addr).await {
             log::error!(
