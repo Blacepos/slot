@@ -14,18 +14,17 @@ path = "src/slot_server/main.rs"
 
 [dependencies]
 clap = { version = "*", features = ["derive"] }
-flexi_logger = { version = "*" }
-log = { version = "*" }
-futures = { version = "*" }
+flexi_logger = "*"
+log =  "*"
+futures = "*"
 serde = { version = "*", features = ["derive"] }
 tokio = { version = "*", features = ["full"] }
 tokio-util = { version = "*", features = ["codec"] }
 tokio-serde = { version = "*", features = ["messagepack"] }
-axum = { version = "*", features = ["http2", "macros"] }
-axum-server = { version = "*", features = ["tls-openssl"] }
-axum-extra = { version = "*" }
-tower = { version = "*" }
-reqwest = { version = "*", features = ["stream"] }
-
-# Add openssl directly to control its features
-openssl = { version = "*", features = ["vendored"] }
+tokio-rustls = "*"
+hyper = { version = "*", features = ["full"] }
+hyper-util = "*"
+axum = { version = "*", features = ["macros"] }
+axum-extra = "*"
+tower = "*"
+reqwest = { version = "*", features = ["stream", "rustls-tls"] }

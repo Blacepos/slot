@@ -105,9 +105,7 @@ pub fn run_client(
                             log::info!(
                                 "Received join confirmation from Slot server"
                             );
-                        }
-                        else
-                        {
+                        } else {
                             log::warn!(
                                 "Slot server rejected join request. Make sure \
                                  to call run_client with the real port your \
