@@ -27,4 +27,4 @@ hyper-util = "*"
 axum = { version = "*", features = ["macros"] }
 axum-extra = "*"
 tower = "*"
-reqwest = { version = "*", features = ["stream", "rustls-tls"] }
+reqwest = { version = "*", default-features = false, features = ["charset", "system-proxy", "rustls-tls"] }
