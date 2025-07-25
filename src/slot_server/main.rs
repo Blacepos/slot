@@ -71,18 +71,18 @@ async fn module_redirect(
         .unwrap();
 
         // convert reqwest response into axum response
-        let resp = Response::builder();
+        let mut resp = Response::builder();
 
-        // // set headers in response
-        // for (k, v) in rw.headers().iter() {
-        //     resp = resp.header(k, v);
-        // }
+        // set headers in response
+        for (k, v) in rw.headers().iter() {
+            resp = resp.header(k, v);
+        }
 
-        // // set extensions in response
-        // resp = resp.extension(rw.extensions().clone());
+        // set extensions in response
+        resp = resp.extension(rw.extensions().clone());
 
-        // // set version
-        // resp = resp.version(rw.version());
+        // set version
+        resp = resp.version(rw.version());
 
         resp.body(axum::body::Body::from(rw.bytes().await.unwrap()))
             .unwrap()

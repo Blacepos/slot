@@ -19,15 +19,15 @@ pub struct Args {
     pub log_level: log::LevelFilter,
 
     /// The web server bind address e.g., "127.0.0.1"
-    #[arg(short='w', long="web-bind", default_value=DEFAULT_BIND)]
+    #[arg(short='w', long="web-interface", default_value=DEFAULT_BIND)]
     pub web_addr: IpAddr,
 
     /// The web server HTTP bind port e.g., "80"
-    #[arg(short='h', long="http-bind", default_value=DEFAULT_HTTP_PORT)]
+    #[arg(short='H', long="http-bind", default_value=DEFAULT_HTTP_PORT)]
     pub http_port: u16,
 
     /// The web server HTTPS bind port e.g., "443"
-    #[arg(short='s', long="https-bind", default_value=DEFAULT_HTTPS_PORT)]
+    #[arg(short='S', long="https-bind", default_value=DEFAULT_HTTPS_PORT)]
     pub https_port: u16,
 
     /// The slot module listener bind port on localhost e.g., "7568"
