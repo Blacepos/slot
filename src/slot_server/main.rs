@@ -6,7 +6,7 @@ use axum::{
     routing::{any, get},
     Router,
 };
-use hyper::body::Incoming;
+use hyper::{body::Incoming, HeaderMap};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use init::initialize;
 use reqwest::StatusCode;
@@ -169,9 +169,13 @@ async fn module_redirect(
         // - priority: u=4
         // - pragma: no-cache
         // - cache-control: no-cache
+        // let mut filt_hdrs = HeaderMap::new();
 
         // for (k, v) in req.headers() {
-        //     log::debug!("{k}: {}", v.to_str().unwrap())
+        //     if !["range"].contains(&k.as_str().to_lowercase().as_str()) {
+        //         filt_hdrs.insert(k, v.clone());
+        //         log::debug!("{k}: {}", v.to_str().unwrap())
+        //     }
         // }
 
         let Ok(mod_resp) = req_client
@@ -198,14 +202,16 @@ async fn module_redirect(
 
         // set headers in response
         for (k, v) in mod_resp.headers().iter() {
-            resp = resp.header(k, v);
+            if ["content-type", "cache-control"].contains(&k.as_str().to_lowercase().as_str()) {
+                resp = resp.header(k, v);
+            }
         }
 
-        // set extensions in response
-        resp = resp.extension(mod_resp.extensions().clone());
+        // // set extensions in response
+        // resp = resp.extension(mod_resp.extensions().clone());
 
-        // set version
-        resp = resp.version(mod_resp.version());
+        // // set version
+        // resp = resp.version(mod_resp.version());
 
         resp.body(axum::body::Body::from(mod_resp.bytes().await.unwrap()))
             .unwrap()
