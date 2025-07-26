@@ -6,7 +6,7 @@ use axum::{
     routing::{any, get},
     Router,
 };
-use hyper::{body::Incoming, HeaderMap};
+use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use init::initialize;
 use reqwest::StatusCode;
@@ -65,6 +65,18 @@ async fn main() {
 
     let default_redirect = args.default_redirect;
     let routes = Router::new()
+        .route(
+            "/favicon.ico",
+            get(async || -> Response {
+                match tokio::fs::read("favicon.ico").await {
+                    Ok(ico) => Response::new(ico.into()),
+                    Err(_) => Response::builder()
+                        .status(StatusCode::NOT_FOUND)
+                        .body("favicon.ico not set".into())
+                        .unwrap(),
+                }
+            }),
+        )
         .route("/{modname}/{*rest}", any(module_redirect))
         .route(
             "/",
@@ -132,7 +144,6 @@ async fn main() {
     }
 }
 
-#[axum::debug_handler]
 async fn module_redirect(
     State(state): State<ModuleStore>,
     Path((modname, modurl)): Path<(String, String)>,
@@ -153,7 +164,7 @@ async fn module_redirect(
             format!("http://{}/{modname}/{modurl}", module_info.http_addr);
 
         // TODO: filter necessary headers (e.g., auth)
-        
+
         // - host: localhost:8001
         // - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0
         // - accept: audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,application/ogg;q=0.7,video/*;q=0.6,*/*;q=0.5
@@ -169,14 +180,6 @@ async fn module_redirect(
         // - priority: u=4
         // - pragma: no-cache
         // - cache-control: no-cache
-        // let mut filt_hdrs = HeaderMap::new();
-
-        // for (k, v) in req.headers() {
-        //     if !["range"].contains(&k.as_str().to_lowercase().as_str()) {
-        //         filt_hdrs.insert(k, v.clone());
-        //         log::debug!("{k}: {}", v.to_str().unwrap())
-        //     }
-        // }
 
         let Ok(mod_resp) = req_client
             .request(req.method().clone(), url)
@@ -202,7 +205,9 @@ async fn module_redirect(
 
         // set headers in response
         for (k, v) in mod_resp.headers().iter() {
-            if ["content-type", "cache-control"].contains(&k.as_str().to_lowercase().as_str()) {
+            if ["content-type", "cache-control"]
+                .contains(&k.as_str().to_lowercase().as_str())
+            {
                 resp = resp.header(k, v);
             }
         }
